@@ -70,10 +70,13 @@ const LOCATIONS = [
   "Toronto",
 ] as const
 
+/** Leadership seats, by position in the team: manager, tech lead. */
+const ROLE_TITLES = ["Engineering Manager", "Tech Lead"] as const
+
 const rng = createRng(1001)
 const PER_TEAM = 8
 
-/** 8 teams x 8 engineers. The first engineer of each team is its lead. */
+/** 8 teams x 8 engineers. The first two of each team are its manager and tech lead. */
 export const engineers: readonly Engineer[] = teams.flatMap((team, t) =>
   Array.from({ length: PER_TEAM }, (_, i): Engineer => {
     const n = t * PER_TEAM + i + 1
@@ -83,7 +86,7 @@ export const engineers: readonly Engineer[] = teams.flatMap((team, t) =>
       id: `eng-${String(n).padStart(3, "0")}`,
       name: `${first} ${last}`,
       email: `${first}.${last}${n}@acme-eng.example`.toLowerCase(),
-      title: i === 0 ? "Engineering Manager" : rng.pick(TITLES),
+      title: ROLE_TITLES[i] ?? rng.pick(TITLES),
       teamId: team.id,
       location: LOCATIONS[(n + t) % LOCATIONS.length],
       active: n % 23 !== 0,

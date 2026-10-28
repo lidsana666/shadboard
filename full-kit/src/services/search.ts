@@ -65,7 +65,7 @@ export async function searchEntities(query: string): Promise<SearchHit[]> {
               kind: "Team",
               title: t.name,
               subtitle: t.department,
-              href: "/dashboards/engineering",
+              href: `/engineering/teams/${t.id}`,
             })),
           ...engineers
             .filter((e) => match(e.name, e.email))

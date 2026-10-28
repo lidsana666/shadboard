@@ -70,7 +70,12 @@ export interface Team {
   id: string
   name: string
   department: string
+  /** Engineering manager. */
+  managerId: string
+  /** Technical lead. */
   leadId: string
+  /** Engineer currently on call for the team's services. */
+  oncallId: string
   /** Sprint capacity in story points. */
   capacity: number
 }
@@ -179,6 +184,24 @@ export interface Risk {
   projectId: string
   ownerId: string
   openedAt: string
+}
+
+export const DOC_KINDS = [
+  "Runbook",
+  "ADR",
+  "Design",
+  "Onboarding",
+  "Postmortem",
+] as const
+export type DocKind = (typeof DOC_KINDS)[number]
+
+export interface TeamDoc {
+  id: string
+  teamId: string
+  title: string
+  kind: DocKind
+  ownerId: string
+  updatedAt: string
 }
 
 /** Daily CI health sample. */
