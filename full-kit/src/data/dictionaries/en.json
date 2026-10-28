@@ -2,6 +2,7 @@
   "navigation": {
     "dashboards": "Dashboards",
     "teams": "Teams",
+    "people": "People",
     "engineering": "Engineering",
     "workspace": "Workspace",
     "analytics": "Analytics",

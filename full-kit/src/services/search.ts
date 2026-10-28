@@ -74,7 +74,7 @@ export async function searchEntities(query: string): Promise<SearchHit[]> {
               kind: "Engineer",
               title: e.name,
               subtitle: e.title,
-              href: "/dashboards/engineering",
+              href: `/engineering/people?q=${encodeURIComponent(e.email)}`,
             })),
         ]
       : []),

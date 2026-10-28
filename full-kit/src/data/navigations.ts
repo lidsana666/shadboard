@@ -14,6 +14,11 @@ export const navigationsData: NavigationType[] = [
         href: "/engineering/teams",
         iconName: "Users",
       },
+      {
+        title: "People",
+        href: "/engineering/people",
+        iconName: "UserRound",
+      },
     ],
   },
   {

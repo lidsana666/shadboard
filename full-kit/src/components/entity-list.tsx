@@ -59,6 +59,8 @@ interface EntityListProps<T> {
   empty: string
   /** Shown when there are no rows at all. */
   none: string
+  /** Starting search text and filter values, e.g. from a deep link. */
+  initial?: { query?: string; picked?: Record<string, string> }
 }
 
 /**
@@ -77,9 +79,12 @@ export function EntityList<T>({
   searchLabel,
   empty,
   none,
+  initial,
 }: EntityListProps<T>) {
-  const [query, setQuery] = useState("")
-  const [picked, setPicked] = useState<Record<string, string>>({})
+  const [query, setQuery] = useState(initial?.query ?? "")
+  const [picked, setPicked] = useState<Record<string, string>>(
+    initial?.picked ?? {}
+  )
   const [sort, setSort] = useState<SortState | null>(null)
   const [page, setPage] = useState(0)
   const [hidden, setHidden] = useState<ReadonlySet<string>>(new Set())

@@ -27,6 +27,15 @@ import { makeKpis } from "./kpi"
 
 const DAY_MS = 86_400_000
 
+/** The roles a person holds in their team: manager, tech lead, on-call. */
+export function dutiesOf(team: Team, personId: string): string[] {
+  const out: string[] = []
+  if (personId === team.managerId) out.push(teamRoles.manager)
+  if (personId === team.leadId) out.push(teamRoles.lead)
+  if (personId === team.oncallId) out.push(teamRoles.oncall)
+  return out
+}
+
 /** Everything the team pages are computed from. Passed in so the builders stay pure. */
 export interface TeamSource {
   engineers: readonly Engineer[]
@@ -203,19 +212,11 @@ export function detail(team: Team, src: TeamSource): TeamDetail {
     .filter((s) => s.status !== "Planned")
     .sort((a, b) => b.startDate.localeCompare(a.startDate))
 
-  const roles = (id: string): string[] => {
-    const out: string[] = []
-    if (id === team.managerId) out.push(teamRoles.manager)
-    if (id === team.leadId) out.push(teamRoles.lead)
-    if (id === team.oncallId) out.push(teamRoles.oncall)
-    return out
-  }
-
   return {
     summary: summarize(team, src),
     members: ofTeam(src.engineers, team.id).map((e) => ({
       ...e,
-      roles: roles(e.id),
+      roles: dutiesOf(team, e.id),
     })),
     projects: projects.map((p) => ({ ...p, owner: label(people, p.ownerId) })),
     services,

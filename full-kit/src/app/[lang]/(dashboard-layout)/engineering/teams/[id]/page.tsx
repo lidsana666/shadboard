@@ -71,7 +71,7 @@ export default async function TeamPage({
       <TeamTabs
         panels={{
           overview: <Overview d={d} />,
-          members: <Members d={d} />,
+          members: <Members d={d} lang={lang} />,
           projects: <Projects d={d} />,
           services: <Services d={d} />,
           repositories: <Repositories d={d} access={access} />,

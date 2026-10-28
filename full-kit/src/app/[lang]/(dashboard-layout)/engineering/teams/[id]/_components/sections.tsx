@@ -1,3 +1,5 @@
+import Link from "next/link"
+
 import type { Column } from "@/components/entity-table"
 import type { TeamPage } from "@/services/teams"
 import type { ReactNode } from "react"
@@ -5,6 +7,7 @@ import type { ReactNode } from "react"
 import { deploymentChart, incidentChart, sloTone } from "@/configs/dashboard"
 import { teamsCopy, velocityChart } from "@/configs/teams"
 import { formatMetric } from "@/lib/format"
+import { ensureLocalizedPathname } from "@/lib/i18n"
 import { formatDate, formatDateShort } from "@/lib/utils"
 
 import { ChartCard } from "@/components/charts/chart-card"
@@ -30,9 +33,11 @@ function TableSection<T>({
   rows,
   rowKey,
   none,
+  action,
 }: {
   title: string
   description?: string
+  action?: ReactNode
   allowed: boolean
   denied: string
   columns: Column<T>[]
@@ -41,7 +46,7 @@ function TableSection<T>({
   none: string
 }) {
   return (
-    <Panel title={title} description={description}>
+    <Panel title={title} description={description} action={action}>
       {allowed ? (
         <EntityTable
           columns={columns}
@@ -129,8 +134,23 @@ export function Overview({ d }: { d: Detail }) {
   )
 }
 
-const memberColumns: Column<Detail["members"][number]>[] = [
-  { id: "name", header: "Name", primary: true, cell: (m) => m.name },
+const memberColumns = (lang: string): Column<Detail["members"][number]>[] => [
+  {
+    id: "name",
+    header: "Name",
+    primary: true,
+    cell: (m) => (
+      <Link
+        href={ensureLocalizedPathname(
+          `/engineering/people?q=${encodeURIComponent(m.email)}`,
+          lang
+        )}
+        className="rounded-sm font-medium hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+      >
+        {m.name}
+      </Link>
+    ),
+  },
   { id: "title", header: "Title", cell: (m) => m.title },
   {
     id: "roles",
@@ -146,14 +166,25 @@ const memberColumns: Column<Detail["members"][number]>[] = [
   },
 ]
 
-export function Members({ d }: { d: Detail }) {
+export function Members({ d, lang }: { d: Detail; lang: string }) {
   return (
     <TableSection
       title="Members"
       description="People in this team and the roles they hold"
       allowed={always}
       denied=""
-      columns={memberColumns}
+      action={
+        <Link
+          href={ensureLocalizedPathname(
+            `/engineering/people?team=${encodeURIComponent(d.summary.name)}`,
+            lang
+          )}
+          className="rounded-sm text-xs text-muted-foreground hover:text-foreground hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        >
+          View in People directory
+        </Link>
+      }
+      columns={memberColumns(lang)}
       rows={d.members}
       rowKey={(m) => m.id}
       none={empty.members}
