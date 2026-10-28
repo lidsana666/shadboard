@@ -1,3 +1,6 @@
+import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react"
+
+import type { SortState } from "@/lib/table"
 import type { ReactNode } from "react"
 
 import { cn } from "@/lib/utils"
@@ -16,6 +19,8 @@ export interface Column<T> {
   id: string
   header: string
   cell: (row: T) => ReactNode
+  /** Value the column sorts by. Setting it makes the header sortable. */
+  sort?: (row: T) => string | number
   align?: "start" | "end"
   /** Title of the row's card on small screens. One column should set this. */
   primary?: boolean
@@ -29,6 +34,15 @@ interface EntityTableProps<T> {
   /** Accessible name of the table. */
   caption: string
   empty?: string
+  /** Current sort and the header click handler; both are needed for sortable headers. */
+  sort?: SortState | null
+  onSort?: (id: string) => void
+}
+
+function SortIcon({ dir }: { dir: SortState["dir"] | null }) {
+  const Icon =
+    dir === "asc" ? ArrowUp : dir === "desc" ? ArrowDown : ArrowUpDown
+  return <Icon className="size-3 shrink-0 opacity-60" aria-hidden />
 }
 
 /**
@@ -41,6 +55,8 @@ export function EntityTable<T>({
   rowKey,
   caption,
   empty,
+  sort,
+  onSort,
 }: EntityTableProps<T>) {
   if (rows.length === 0) {
     return <PageState variant="empty" description={empty} compact />
@@ -58,13 +74,34 @@ export function EntityTable<T>({
               {columns.map((c) => (
                 <TableHead
                   key={c.id}
+                  aria-sort={
+                    sort?.id === c.id
+                      ? sort.dir === "asc"
+                        ? "ascending"
+                        : "descending"
+                      : undefined
+                  }
                   className={cn(
                     "h-8 px-2 text-xs",
                     c.align === "end" && "text-end",
                     c.className
                   )}
                 >
-                  {c.header}
+                  {c.sort && onSort ? (
+                    <button
+                      type="button"
+                      onClick={() => onSort(c.id)}
+                      className={cn(
+                        "inline-flex cursor-pointer items-center gap-1 rounded-sm font-medium hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
+                        c.align === "end" && "flex-row-reverse"
+                      )}
+                    >
+                      {c.header}
+                      <SortIcon dir={sort?.id === c.id ? sort.dir : null} />
+                    </button>
+                  ) : (
+                    c.header
+                  )}
                 </TableHead>
               ))}
             </TableRow>

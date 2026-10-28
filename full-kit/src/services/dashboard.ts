@@ -1,5 +1,4 @@
 import type { KpiId } from "@/configs/kpis"
-import type { Tone } from "@/configs/tokens"
 import type {
   Deployment,
   Incident,
@@ -10,6 +9,7 @@ import type {
   Team,
   TrendPoint,
 } from "@/types/engineering"
+import type { KpiInput, KpiValue } from "./kpi"
 
 import {
   SEED_NOW,
@@ -28,32 +28,22 @@ import {
 
 import {
   activeProjectStatuses,
-  kpiDefinitions,
-  kpiTone,
   kpiWindowDays,
   trendWeeks,
 } from "@/configs/kpis"
 import { computeDora, median, weekStart, weeklyCounts } from "@/lib/dora"
 import { can } from "@/lib/rbac"
+import { pct, sprintElapsed } from "@/lib/sprint"
+import { outcomeTrend, severityTrend } from "@/lib/trends"
 
 import { authorize } from "./guard"
+import { makeKpis } from "./kpi"
+
+export type { KpiValue }
 
 const DAY_MS = 86_400_000
 const WINDOW_DAYS = kpiWindowDays
 const TREND_WEEKS = trendWeeks
-
-export interface KpiValue {
-  id: KpiId
-  label: string
-  unit: string
-  digits: number
-  value: number
-  /** Value over the previous equal window, when comparable. */
-  previous: number | null
-  better: "higher" | "lower" | "none"
-  target: number | null
-  tone: Tone
-}
 
 export interface TeamRow {
   id: string
@@ -125,9 +115,6 @@ export interface DashboardOverview {
   }
 }
 
-const pct = (part: number, whole: number) =>
-  whole === 0 ? 0 : (part / whole) * 100
-
 const weekly = <T>(
   rows: readonly T[],
   at: (r: T) => string,
@@ -171,7 +158,7 @@ function buildKpis(): KpiValue[] {
       rows.reduce((n, r) => n + r[total], 0)
     )
 
-  const values: Record<KpiId, { value: number; previous: number | null }> = {
+  const values: Record<KpiId, KpiInput> = {
     activeProjects: {
       value: projects.filter((p) => activeProjectStatuses.includes(p.status))
         .length,
@@ -211,24 +198,13 @@ function buildKpis(): KpiValue[] {
     },
   }
 
-  return kpiDefinitions.map((def) => ({
-    id: def.id,
-    label: def.label,
-    unit: def.unit,
-    digits: def.digits,
-    better: def.better,
-    target: def.target ?? null,
-    ...values[def.id],
-    tone: kpiTone(def, values[def.id].value),
-  }))
+  return makeKpis(values)
 }
 
 function buildSprintHealth(): SprintHealth[] {
   return sprints
     .filter((s) => s.status === "Active")
     .map((s: Sprint) => {
-      const start = new Date(s.startDate).getTime()
-      const end = new Date(s.endDate).getTime() + DAY_MS
       return {
         teamId: s.teamId,
         team: teams.find((t) => t.id === s.teamId)?.name ?? s.teamId,
@@ -238,7 +214,7 @@ function buildSprintHealth(): SprintHealth[] {
         completed: s.completed,
         added: s.added,
         removed: s.removed,
-        elapsed: Math.min(100, Math.max(0, pct(SEED_NOW - start, end - start))),
+        elapsed: sprintElapsed(s, SEED_NOW),
         completion: pct(s.completed, s.committed),
       }
     })
@@ -299,21 +275,6 @@ export async function getDashboardOverview(): Promise<DashboardOverview> {
     (d) => d.startedAt,
     (d) => d.environment === "Production" && d.status === "Success"
   )
-  const byStatus = (status: Deployment["status"]) =>
-    weekly(
-      deployments,
-      (d) => d.startedAt,
-      (d) => d.status === status
-    )
-  const success = byStatus("Success")
-  const failed = byStatus("Failed")
-  const rolledBack = byStatus("Rolled Back")
-  const critical = weekly(
-    incidents,
-    (i) => i.detectedAt,
-    (i) => i.severity === "SEV-1" || i.severity === "SEV-2"
-  )
-  const allIncidents = weekly(incidents, (i) => i.detectedAt)
 
   return {
     asOf: new Date(SEED_NOW).toISOString(),
@@ -323,17 +284,8 @@ export async function getDashboardOverview(): Promise<DashboardOverview> {
       deployments: p.value,
       leadTime: Math.round(median(leadTimesByWeek.get(p.date) ?? []) * 10) / 10,
     })),
-    deploymentTrend: success.map((p, i) => ({
-      date: p.date,
-      success: p.value,
-      failed: failed[i].value,
-      rolledBack: rolledBack[i].value,
-    })),
-    incidentTrend: allIncidents.map((p, i) => ({
-      date: p.date,
-      critical: critical[i].value,
-      other: p.value - critical[i].value,
-    })),
+    deploymentTrend: outcomeTrend(deployments, SEED_NOW, TREND_WEEKS),
+    incidentTrend: severityTrend(incidents, SEED_NOW, TREND_WEEKS),
     teamCapacity: buildTeams().map((t) => ({
       team: t.name,
       capacity: t.capacity,

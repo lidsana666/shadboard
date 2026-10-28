@@ -1,4 +1,5 @@
 import type { Tone } from "@/configs/tokens"
+import type { IncidentSeverity } from "@/types/engineering"
 
 import { chartSeries, toneColor } from "@/configs/tokens"
 
@@ -37,6 +38,12 @@ export const kpiToneLabel: Record<Tone, string | null> = {
   warning: "Watch",
   danger: "Off target",
 }
+
+/** Severities that count as critical in incident charts and team health. */
+export const criticalSeverities: readonly IncidentSeverity[] = [
+  "SEV-1",
+  "SEV-2",
+]
 
 /**
  * Sprint pacing: how far completed work may trail elapsed time (percentage
@@ -81,7 +88,7 @@ export interface ChartSpec<K extends string> {
   series: SeriesDef<K>[]
 }
 
-const defineChart = <K extends string>(spec: ChartSpec<K>) => spec
+export const defineChart = <K extends string>(spec: ChartSpec<K>) => spec
 
 export const deliveryChart = defineChart({
   id: "delivery",
