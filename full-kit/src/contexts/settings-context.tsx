@@ -7,6 +7,7 @@ import type { LocaleType, SettingsType } from "@/types"
 import type { ReactNode } from "react"
 
 import { defaultRadius } from "@/configs/tokens"
+import { parseSettings } from "@/lib/settings"
 
 export const defaultSettings: SettingsType = {
   theme: "zinc",
@@ -27,18 +28,23 @@ export const SettingsContext = createContext<
 
 export function SettingsProvider({
   locale,
+  initial,
   children,
 }: {
   locale: LocaleType
+  initial?: SettingsType | null
   children: ReactNode
 }) {
   const [storedSettings, setStoredSettings, deleteStoredSettings] =
     useCookie("settings")
-  const [settings, setSettings] = useState<SettingsType | null>(null)
+  const [settings, setSettings] = useState<SettingsType | null>(
+    initial ?? { ...defaultSettings, locale }
+  )
 
   useEffect(() => {
-    if (storedSettings) {
-      setSettings(JSON.parse(storedSettings))
+    const stored = parseSettings(storedSettings)
+    if (stored) {
+      setSettings(stored)
     } else {
       setSettings({ ...defaultSettings, locale })
     }
@@ -57,7 +63,8 @@ export function SettingsProvider({
     setSettings(defaultSettings)
   }, [deleteStoredSettings])
 
-  // Render children only when settings are ready
+  // Settings come from the cookie on the server, so children render in SSR
+  // and route status codes (404) are decided before streaming starts.
   if (!settings) {
     return null
   }
