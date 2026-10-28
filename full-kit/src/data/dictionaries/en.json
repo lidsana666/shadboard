@@ -1,6 +1,7 @@
 {
   "navigation": {
     "dashboards": "Dashboards",
+    "teams": "Teams",
     "engineering": "Engineering",
     "workspace": "Workspace",
     "analytics": "Analytics",

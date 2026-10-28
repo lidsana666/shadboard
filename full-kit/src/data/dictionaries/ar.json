@@ -1,6 +1,7 @@
 {
   "navigation": {
     "dashboards": "لوحات التحكم",
+    "teams": "الفرق",
     "engineering": "الهندسة",
     "workspace": "مساحة العمل",
     "analytics": "التحليلات",

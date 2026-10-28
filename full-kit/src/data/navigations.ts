@@ -9,6 +9,11 @@ export const navigationsData: NavigationType[] = [
         href: "/dashboards/engineering",
         iconName: "LayoutDashboard",
       },
+      {
+        title: "Teams",
+        href: "/engineering/teams",
+        iconName: "Users",
+      },
     ],
   },
   {
