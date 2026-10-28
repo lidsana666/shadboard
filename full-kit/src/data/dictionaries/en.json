@@ -1,6 +1,8 @@
 {
   "navigation": {
     "dashboards": "Dashboards",
+    "engineering": "Engineering",
+    "workspace": "Workspace",
     "analytics": "Analytics",
     "crm": "CRM",
     "ecommerce": "eCommerce",

@@ -9,11 +9,7 @@ import type { LocaleType } from "@/types"
 
 import { ensureLocalizedPathname } from "@/lib/i18n"
 
-import { LanguageDropdown } from "@/components/language-dropdown"
-import { FullscreenToggle } from "@/components/layout/full-screen-toggle"
-import { NotificationDropdown } from "@/components/layout/notification-dropdown"
-import { UserDropdown } from "@/components/layout/user-dropdown"
-import { ModeDropdown } from "@/components/mode-dropdown"
+import { HeaderActions } from "../header-actions"
 import { ToggleMobileSidebar } from "../toggle-mobile-sidebar"
 
 export function BottomBarHeader({
@@ -40,13 +36,7 @@ export function BottomBarHeader({
         />
         <span>Shadboard</span>
       </Link>
-      <div className="flex gap-2">
-        <NotificationDropdown dictionary={dictionary} />
-        <FullscreenToggle />
-        <ModeDropdown dictionary={dictionary} />
-        <LanguageDropdown dictionary={dictionary} />
-        <UserDropdown dictionary={dictionary} locale={locale} />
-      </div>
+      <HeaderActions dictionary={dictionary} />
     </div>
   )
 }

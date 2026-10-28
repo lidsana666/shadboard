@@ -1,34 +1,25 @@
 "use client"
 
-import { Fragment, useCallback, useEffect, useState } from "react"
-import { useParams, usePathname, useRouter } from "next/navigation"
-import { ChevronDown, Search } from "lucide-react"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { useParams, useRouter } from "next/navigation"
+import { Search } from "lucide-react"
 
 import type { DictionaryType } from "@/lib/get-dictionary"
-import type {
-  LocaleType,
-  NavigationNestedItem,
-  NavigationRootItem,
-} from "@/types"
+import type { NavEntry } from "@/lib/navigation"
+import type { SearchHit } from "@/services/search"
+import type { LocaleType } from "@/types"
 import type { DialogProps } from "@radix-ui/react-dialog"
 
 import { navigationsData } from "@/data/navigations"
 
+import { searchKindIcons, shellLimits } from "@/configs/shell"
 import { ensureLocalizedPathname } from "@/lib/i18n"
-import {
-  cn,
-  getDictionaryValue,
-  isActivePathname,
-  titleCaseToCamelCase,
-} from "@/lib/utils"
+import { flattenNav } from "@/lib/navigation"
+import { cn, getDictionaryValue, titleCaseToCamelCase } from "@/lib/utils"
 
+import { useShell } from "@/contexts/shell-context"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
 import {
   CommandDialog,
   CommandEmpty,
@@ -39,12 +30,23 @@ import {
 } from "@/components/ui/command"
 import { DialogTitle } from "@/components/ui/dialog"
 import { Keyboard } from "@/components/ui/keyboard"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { DynamicIcon } from "@/components/dynamic-icon"
 
 interface CommandMenuProps extends DialogProps {
   dictionary: DictionaryType
   buttonClassName?: string
+}
+
+const entries = flattenNav(navigationsData)
+
+function isTypingTarget(target: EventTarget | null) {
+  return (
+    target instanceof HTMLElement &&
+    (target.isContentEditable ||
+      target instanceof HTMLInputElement ||
+      target instanceof HTMLTextAreaElement ||
+      target instanceof HTMLSelectElement)
+  )
 }
 
 export function CommandMenu({
@@ -53,97 +55,86 @@ export function CommandMenu({
   ...props
 }: CommandMenuProps) {
   const [open, setOpen] = useState(false)
-  const pathname = usePathname()
-  const params = useParams()
+  const [query, setQuery] = useState("")
+  const [found, setFound] = useState<{ query: string; hits: SearchHit[] }>({
+    query: "",
+    hits: [],
+  })
   const router = useRouter()
+  const params = useParams()
+  const { data, favorites, recents } = useShell()
 
   const locale = params.lang as LocaleType
+  const term = query.trim()
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if ((e.key === "k" && (e.metaKey || e.ctrlKey)) || e.key === "/") {
-        if (
-          (e.target instanceof HTMLElement && e.target.isContentEditable) ||
-          e.target instanceof HTMLInputElement ||
-          e.target instanceof HTMLTextAreaElement ||
-          e.target instanceof HTMLSelectElement
-        ) {
-          return
-        }
-
+        if (isTypingTarget(e.target)) return
         e.preventDefault()
-        setOpen((open) => !open)
+        setOpen((value) => !value)
       }
     }
-
     document.addEventListener("keydown", down)
     return () => document.removeEventListener("keydown", down)
   }, [])
 
-  const runCommand = useCallback((command: () => unknown) => {
-    setOpen(false)
-    command()
-  }, [])
-
-  const renderMenuItem = (item: NavigationRootItem | NavigationNestedItem) => {
-    const title = getDictionaryValue(
-      titleCaseToCamelCase(item.title),
-      dictionary.navigation
-    )
-    const label =
-      item.label &&
-      getDictionaryValue(titleCaseToCamelCase(item.label), dictionary.label)
-
-    // If the item has nested items, render it with a collapsible dropdown.
-    if (item.items) {
-      return (
-        <Collapsible key={item.title} className="group/collapsible">
-          <CommandItem asChild>
-            <CollapsibleTrigger className="w-full flex justify-between items-center gap-2 px-2 py-1.5 [&[data-state=open]>svg]:rotate-180">
-              <span className="flex items-center gap-2">
-                {"iconName" in item && (
-                  <DynamicIcon name={item.iconName} className="h-4 w-4" />
-                )}
-                <span>{title}</span>
-                {"label" in item && <Badge variant="secondary">{label}</Badge>}
-              </span>
-              <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200" />
-            </CollapsibleTrigger>
-          </CommandItem>
-          <CollapsibleContent className="space-y-1 overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
-            {item.items.map((subItem: NavigationNestedItem) =>
-              renderMenuItem(subItem)
-            )}
-          </CollapsibleContent>
-        </Collapsible>
-      )
+  // Entity search: debounced, cancelled when the query changes or the dialog closes.
+  useEffect(() => {
+    if (!open || term.length < shellLimits.searchMinChars) return
+    const controller = new AbortController()
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(term)}`, {
+          signal: controller.signal,
+        })
+        if (!res.ok) return
+        const hits: SearchHit[] = await res.json()
+        setFound({ query: term, hits })
+      } catch {
+        // Aborted or offline: keep the page results.
+      }
+    }, shellLimits.searchDebounceMs)
+    return () => {
+      clearTimeout(timer)
+      controller.abort()
     }
+  }, [open, term])
 
-    // Otherwise, render the item with a link.
-    if ("href" in item) {
-      const localizedPathname = ensureLocalizedPathname(item.href, locale)
-      const isActive = isActivePathname(localizedPathname, pathname)
+  const go = useCallback(
+    (href: string) => {
+      setOpen(false)
+      setQuery("")
+      router.push(ensureLocalizedPathname(href, locale))
+    },
+    [locale, router]
+  )
 
-      return (
-        <CommandItem
-          key={item.title}
-          onSelect={() => runCommand(() => router.push(localizedPathname))}
-          className={cn(
-            "flex items-center gap-2 px-2 py-1.5",
-            isActive && "bg-accent"
-          )}
-        >
-          {"iconName" in item ? (
-            <DynamicIcon name={item.iconName} />
-          ) : (
-            <DynamicIcon name="Circle" />
-          )}
-          <span>{title}</span>
-          {label && <Badge variant="secondary">{label}</Badge>}
-        </CommandItem>
-      )
-    }
-  }
+  const byHref = useMemo(() => new Map(entries.map((e) => [e.href, e])), [])
+  const pick = (hrefs: string[]) => hrefs.flatMap((h) => byHref.get(h) ?? [])
+
+  const hits = found.query === term ? found.hits : []
+  const pageTitle = (e: NavEntry) =>
+    getDictionaryValue(titleCaseToCamelCase(e.title), dictionary.navigation)
+
+  const pageItem = (e: NavEntry, prefix: string) => (
+    <CommandItem
+      key={`${prefix}-${e.href}`}
+      value={`${prefix} ${pageTitle(e)} ${e.trail.join(" ")}`}
+      onSelect={() => go(e.href)}
+    >
+      <DynamicIcon name={e.iconName ?? "Circle"} />
+      <span>{pageTitle(e)}</span>
+      {e.trail.length > 1 && (
+        <span className="text-xs text-muted-foreground">
+          {e.trail.slice(1).join(" / ")}
+        </span>
+      )}
+    </CommandItem>
+  )
+
+  const favoriteEntries = pick(favorites)
+  const recentEntries = pick(recents)
 
   return (
     <>
@@ -155,6 +146,7 @@ export function CommandMenu({
           buttonClassName
         )}
         onClick={() => setOpen(true)}
+        aria-label={dictionary.search.search}
         {...props}
       >
         <Search className="me-2 h-4 w-4" />
@@ -162,30 +154,73 @@ export function CommandMenu({
         <Keyboard className="ms-auto">K</Keyboard>
       </Button>
       <CommandDialog open={open} onOpenChange={setOpen} {...props}>
-        <DialogTitle className="sr-only">Search Menu</DialogTitle>
-        <CommandInput placeholder={dictionary.search.typeCommand} />
-        <CommandList>
+        <DialogTitle className="sr-only">
+          {dictionary.search.search}
+        </DialogTitle>
+        <CommandInput
+          placeholder={dictionary.search.typeCommand}
+          value={query}
+          onValueChange={setQuery}
+        />
+        <CommandList className="max-h-[320px]">
           <CommandEmpty>{dictionary.search.noResults}</CommandEmpty>
-          <ScrollArea className="h-[300px] max-h-[300px]">
-            {navigationsData.map((nav) => {
-              const title = getDictionaryValue(
-                titleCaseToCamelCase(nav.title),
-                dictionary.navigation
-              )
-
-              return (
-                <CommandGroup
-                  key={nav.title}
-                  heading={title}
-                  className="[&_[cmdk-group-items]]:space-y-1"
+          {hits.length > 0 && (
+            <CommandGroup heading="Results">
+              {hits.map((hit) => (
+                <CommandItem
+                  key={`${hit.kind}-${hit.id}`}
+                  value={`hit ${hit.title} ${hit.subtitle} ${term}`}
+                  onSelect={() => go(hit.href)}
                 >
-                  {nav.items.map((item) => (
-                    <Fragment key={item.title}>{renderMenuItem(item)}</Fragment>
-                  ))}
-                </CommandGroup>
-              )
-            })}
-          </ScrollArea>
+                  <DynamicIcon name={searchKindIcons[hit.kind]} />
+                  <span>{hit.title}</span>
+                  <span className="truncate text-xs text-muted-foreground">
+                    {hit.subtitle}
+                  </span>
+                  <Badge variant="secondary" className="ms-auto">
+                    {hit.kind}
+                  </Badge>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          )}
+          {data.createActions.length > 0 && (
+            <CommandGroup heading="Create">
+              {data.createActions.map((a) => (
+                <CommandItem
+                  key={a.id}
+                  value={`create ${a.label}`}
+                  onSelect={() => go(a.href)}
+                >
+                  <DynamicIcon name={a.iconName} />
+                  <span>{a.label}</span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          )}
+          {favoriteEntries.length > 0 && (
+            <CommandGroup heading="Favorites">
+              {favoriteEntries.map((e) => pageItem(e, "favorite"))}
+            </CommandGroup>
+          )}
+          {recentEntries.length > 0 && (
+            <CommandGroup heading="Recent">
+              {recentEntries.map((e) => pageItem(e, "recent"))}
+            </CommandGroup>
+          )}
+          {navigationsData.map(({ title: s }) => (
+            <CommandGroup
+              key={s}
+              heading={getDictionaryValue(
+                titleCaseToCamelCase(s),
+                dictionary.navigation
+              )}
+            >
+              {entries
+                .filter((e) => e.trail[0] === s)
+                .map((e) => pageItem(e, "page"))}
+            </CommandGroup>
+          ))}
         </CommandList>
       </CommandDialog>
     </>

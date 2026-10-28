@@ -1,6 +1,8 @@
 {
   "navigation": {
     "dashboards": "لوحات التحكم",
+    "engineering": "الهندسة",
+    "workspace": "مساحة العمل",
     "analytics": "التحليلات",
     "crm": "إدارة علاقات العملاء",
     "ecommerce": "التجارة الإلكترونية",

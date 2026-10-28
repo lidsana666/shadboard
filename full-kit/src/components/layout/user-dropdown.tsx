@@ -5,12 +5,11 @@ import { LogOut, User, UserCog } from "lucide-react"
 import type { DictionaryType } from "@/lib/get-dictionary"
 import type { LocaleType } from "@/types"
 
-import { userData } from "@/data/user"
-
 import { ensureLocalizedPathname } from "@/lib/i18n"
 import { getInitials } from "@/lib/utils"
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useShell } from "@/contexts/shell-context"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -29,6 +28,9 @@ export function UserDropdown({
   dictionary: DictionaryType
   locale: LocaleType
 }) {
+  const { data } = useShell()
+  const { name, email } = data.user
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -36,12 +38,11 @@ export function UserDropdown({
           variant="outline"
           size="icon"
           className="rounded-lg"
-          aria-label="User"
+          aria-label={`Account menu, ${data.role.label}`}
         >
           <Avatar className="size-9">
-            <AvatarImage src={userData?.avatar} alt="" />
             <AvatarFallback className="bg-transparent">
-              {userData?.name && getInitials(userData.name)}
+              {getInitials(name)}
             </AvatarFallback>
           </Avatar>
         </Button>
@@ -49,15 +50,17 @@ export function UserDropdown({
       <DropdownMenuContent forceMount>
         <DropdownMenuLabel className="flex gap-2">
           <Avatar>
-            <AvatarImage src={userData?.avatar} alt="Avatar" />
             <AvatarFallback className="bg-transparent">
-              {userData?.name && getInitials(userData.name)}
+              {getInitials(name)}
             </AvatarFallback>
           </Avatar>
           <div className="flex flex-col overflow-hidden">
-            <p className="text-sm font-medium truncate">John Doe</p>
+            <p className="text-sm font-medium truncate">{name}</p>
             <p className="text-xs text-muted-foreground font-semibold truncate">
-              {userData?.email}
+              {email}
+            </p>
+            <p className="text-xs text-muted-foreground truncate">
+              {data.role.label}
             </p>
           </div>
         </DropdownMenuLabel>

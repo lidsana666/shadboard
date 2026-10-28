@@ -2,28 +2,38 @@ import type { NavigationType } from "@/types"
 
 export const navigationsData: NavigationType[] = [
   {
-    title: "Dashboards",
+    title: "Engineering",
     items: [
       {
-        title: "Analytics",
-        href: "/dashboards/analytics",
-        iconName: "ChartPie",
-      },
-      {
-        title: "CRM",
-        href: "/dashboards/crm",
-        iconName: "ChartBar",
-      },
-      {
-        title: "eCommerce",
-        href: "/dashboards/ecommerce",
-        iconName: "ShoppingCart",
+        title: "Dashboard",
+        href: "/dashboards/engineering",
+        iconName: "LayoutDashboard",
       },
     ],
   },
   {
-    title: "Pages",
+    title: "Workspace",
+    collapsed: true,
     items: [
+      {
+        title: "Dashboards",
+        iconName: "ChartPie",
+        items: [
+          { title: "Analytics", href: "/dashboards/analytics" },
+          { title: "CRM", href: "/dashboards/crm" },
+          { title: "eCommerce", href: "/dashboards/ecommerce" },
+        ],
+      },
+      {
+        title: "Apps",
+        iconName: "LayoutGrid",
+        items: [
+          { title: "Email", href: "/apps/email" },
+          { title: "Chat", href: "/apps/chat" },
+          { title: "Calendar", href: "/apps/calendar" },
+          { title: "Kanban", href: "/apps/kanban" },
+        ],
+      },
       {
         title: "Landing",
         href: "/pages/landing",
@@ -39,12 +49,6 @@ export const navigationsData: NavigationType[] = [
         title: "Payment",
         href: "/pages/payment",
         iconName: "CreditCard",
-      },
-      {
-        title: "Help Center",
-        href: "#",
-        label: "Soon",
-        iconName: "Headset",
       },
       {
         title: "Settings",
@@ -104,94 +108,11 @@ export const navigationsData: NavigationType[] = [
           },
         ],
       },
-      {
-        title: "Products",
-        iconName: "Package",
-        items: [
-          {
-            title: "List",
-            href: "/",
-            label: "Soon",
-          },
-          {
-            title: "Add",
-            href: "/",
-            label: "Soon",
-          },
-          {
-            title: "Category",
-            href: "/",
-            label: "Soon",
-          },
-        ],
-      },
-      {
-        title: "Orders",
-        iconName: "ShoppingBasket",
-        items: [
-          {
-            title: "List",
-            href: "/",
-            label: "Soon",
-          },
-          {
-            title: "Details",
-            href: "/",
-            label: "Soon",
-          },
-        ],
-      },
-      {
-        title: "Customers",
-        iconName: "Users",
-        items: [
-          {
-            title: "List",
-            href: "/",
-            label: "Soon",
-          },
-          {
-            title: "Details",
-            href: "/",
-            label: "Soon",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    title: "Apps",
-    items: [
-      {
-        title: "Email",
-        href: "/apps/email",
-        iconName: "AtSign",
-      },
-      {
-        title: "Chat",
-        href: "/apps/chat",
-        iconName: "MessageCircle",
-      },
-      {
-        title: "Calendar",
-        href: "/apps/calendar",
-        iconName: "Calendar",
-      },
-      {
-        title: "Kanban",
-        href: "/apps/kanban",
-        iconName: "Grid2x2",
-      },
-      {
-        title: "Todo",
-        href: "#",
-        label: "Soon",
-        iconName: "ListTodo",
-      },
     ],
   },
   {
     title: "Design System",
+    collapsed: true,
     items: [
       {
         title: "Colors",

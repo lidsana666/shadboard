@@ -90,6 +90,8 @@ export type FormatStyleType = "percent" | "duration" | "currency" | "regular"
 
 export interface NavigationType {
   title: string
+  /** Render the group collapsed until the user opens it. */
+  collapsed?: boolean
   items: NavigationRootItem[]
 }
 
