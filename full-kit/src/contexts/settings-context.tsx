@@ -6,10 +6,12 @@ import { useCookie } from "react-use"
 import type { LocaleType, SettingsType } from "@/types"
 import type { ReactNode } from "react"
 
+import { defaultRadius } from "@/configs/tokens"
+
 export const defaultSettings: SettingsType = {
   theme: "zinc",
   mode: "system",
-  radius: 0.5,
+  radius: defaultRadius,
   layout: "vertical",
   locale: "en",
 }

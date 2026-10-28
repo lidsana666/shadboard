@@ -4,6 +4,8 @@ import { useEffect } from "react"
 
 import type { ReactNode } from "react"
 
+import { defaultRadius } from "@/configs/tokens"
+
 import { useSettings } from "@/hooks/use-settings"
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
@@ -23,7 +25,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       })
 
     bodyElement.classList.add(`theme-${settings.theme}`)
-    bodyElement.classList.add(`radius-${settings.radius ?? 0.5}`)
+    bodyElement.classList.add(`radius-${settings.radius ?? defaultRadius}`)
   }, [settings.theme, settings.radius])
 
   return <>{children}</>

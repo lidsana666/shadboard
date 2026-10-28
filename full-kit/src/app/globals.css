@@ -31,6 +31,11 @@
   --color-success: hsl(var(--success));
   --color-success-foreground: hsl(var(--success-foreground));
 
+  --color-tone-success: hsl(var(--tone-success));
+  --color-tone-warning: hsl(var(--tone-warning));
+  --color-tone-danger: hsl(var(--tone-danger));
+  --color-tone-info: hsl(var(--tone-info));
+
   --color-muted: hsl(var(--muted));
   --color-muted-foreground: hsl(var(--muted-foreground));
 
@@ -189,6 +194,11 @@
   --chart-3: 30 80% 55%;
   --chart-4: 280 65% 60%;
   --chart-5: 340 75% 55%;
+  /* Semantic tones: used as text, stroke and (at low alpha) fill. Contrast >= 4.5:1 on --background. */
+  --tone-success: 142 72% 26%;
+  --tone-warning: 32 95% 30%;
+  --tone-danger: 0 72% 42%;
+  --tone-info: 217 83% 42%;
   --sidebar-background: var(--background);
   --sidebar-foreground: var(--foreground);
   --sidebar-primary: var(--primary);
@@ -246,8 +256,8 @@
   --destructive-foreground: 0 0% 98%;
   --success: 142.4 71.8% 29.2%;
   --success-foreground: 0 0% 98%;
-  --border: 240 3.7% 15.9%;
-  --input: 240 3.7% 15.9%;
+  --border: 240 3.7% 22%;
+  --input: 240 3.7% 22%;
   --ring: 240 4.9% 83.9%;
   --chart-1: 220 70% 50%;
   --chart-2: 160 60% 45%;
