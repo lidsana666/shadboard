@@ -29,6 +29,12 @@ export interface KpiDefinition {
   digits: number
 }
 
+/** Days in the window DORA metrics are computed over (and compared with the window before). */
+export const kpiWindowDays = 30
+
+/** Weeks shown on every trend chart. */
+export const trendWeeks = 12
+
 /** Projects that count as "active" on the dashboard. */
 export const activeProjectStatuses: readonly ProjectStatus[] = [
   "In Progress",

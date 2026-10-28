@@ -12,6 +12,7 @@ import { userData } from "@/data/user"
 
 import { SignInSchema } from "@/schemas/sign-in-schema"
 
+import { homePathname } from "@/configs/app"
 import { ensureLocalizedPathname } from "@/lib/i18n"
 import { ensureRedirectPathname } from "@/lib/utils"
 
@@ -34,10 +35,7 @@ export function SignInForm() {
   const searchParams = useSearchParams()
   const router = useRouter()
 
-  const redirectPathname =
-    searchParams.get("redirectTo") ||
-    process.env.NEXT_PUBLIC_HOME_PATHNAME ||
-    "/"
+  const redirectPathname = searchParams.get("redirectTo") || homePathname
 
   const form = useForm<SignInFormType>({
     resolver: zodResolver(SignInSchema),

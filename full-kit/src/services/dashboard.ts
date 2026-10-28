@@ -26,15 +26,21 @@ import {
   teams,
 } from "@/data/engineering"
 
-import { activeProjectStatuses, kpiDefinitions, kpiTone } from "@/configs/kpis"
+import {
+  activeProjectStatuses,
+  kpiDefinitions,
+  kpiTone,
+  kpiWindowDays,
+  trendWeeks,
+} from "@/configs/kpis"
 import { computeDora, median, weekStart, weeklyCounts } from "@/lib/dora"
 import { can } from "@/lib/rbac"
 
 import { authorize } from "./guard"
 
 const DAY_MS = 86_400_000
-const WINDOW_DAYS = 30
-const TREND_WEEKS = 12
+const WINDOW_DAYS = kpiWindowDays
+const TREND_WEEKS = trendWeeks
 
 export interface KpiValue {
   id: KpiId
@@ -111,6 +117,8 @@ export interface DashboardOverview {
   recentDeployments: Deployment[]
   recentIncidents: Incident[]
   teams: TeamRow[]
+  /** What the signed-in role may see; panels show a no-permission state otherwise. */
+  access: { deployments: boolean; incidents: boolean }
   names: {
     teams: Record<string, string>
     services: Record<string, string>
@@ -351,6 +359,7 @@ export async function getDashboardOverview(): Promise<DashboardOverview> {
     recentDeployments: canSeeDeploys ? deployments.slice(0, 8) : [],
     recentIncidents: canSeeIncidents ? incidents.slice(0, 6) : [],
     teams: buildTeams(),
+    access: { deployments: canSeeDeploys, incidents: canSeeIncidents },
     names: { teams: teamName, services: serviceName },
   }
 }

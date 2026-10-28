@@ -3,6 +3,7 @@ import { getToken } from "next-auth/jwt"
 
 import type { NextRequest } from "next/server"
 
+import { homePathname } from "@/configs/app"
 import { isGuestRoute, isPublicRoute } from "@/lib/auth-routes"
 import {
   ensureLocalizedPathname,
@@ -46,7 +47,7 @@ export async function middleware(request: NextRequest) {
 
     // Redirect authenticated users away from guest routes
     if (isAuthenticated && isGuest) {
-      return redirect(process.env.HOME_PATHNAME || "/", request)
+      return redirect(homePathname, request)
     }
 
     // Redirect unauthenticated users from protected routes to sign-in

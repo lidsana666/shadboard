@@ -9,6 +9,7 @@ import type { LocaleType, VerifyEmailFormType } from "@/types"
 
 import { VerifyEmailSchema } from "@/schemas/verify-email-schema"
 
+import { homePathname } from "@/configs/app"
 import { ensureLocalizedPathname } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 
@@ -59,10 +60,7 @@ export function VerifyEmailForm() {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-2">
         <Link
-          href={ensureLocalizedPathname(
-            process.env.NEXT_PUBLIC_HOME_PATHNAME || "/",
-            locale
-          )}
+          href={ensureLocalizedPathname(homePathname, locale)}
           className={cn(buttonVariants({ variant: "default" }))}
         >
           Skip for now
