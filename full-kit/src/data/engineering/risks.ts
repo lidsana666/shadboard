@@ -1,0 +1,60 @@
+import type { Risk } from "@/types/engineering"
+
+export const risks: readonly Risk[] = [
+  {
+    id: "risk-01",
+    title: "Lakehouse vendor contract not signed; ingestion blocked",
+    level: "Critical",
+    projectId: "prj-lakehouse",
+    ownerId: "eng-033",
+    openedAt: "2026-10-12",
+  },
+  {
+    id: "risk-02",
+    title: "Ledger v2 dual-write drift exceeds reconciliation window",
+    level: "High",
+    projectId: "prj-ledger-v2",
+    ownerId: "eng-009",
+    openedAt: "2026-10-18",
+  },
+  {
+    id: "risk-03",
+    title: "Fraud rules need security review before release",
+    level: "High",
+    projectId: "prj-fraud-rules",
+    ownerId: "eng-010",
+    openedAt: "2026-10-20",
+  },
+  {
+    id: "risk-04",
+    title: "Feature store capacity estimate below projected load",
+    level: "Medium",
+    projectId: "prj-ml-features",
+    ownerId: "eng-034",
+    openedAt: "2026-10-08",
+  },
+  {
+    id: "risk-05",
+    title: "Passkey recovery flow lacks accessibility sign-off",
+    level: "Medium",
+    projectId: "prj-passkeys",
+    ownerId: "eng-017",
+    openedAt: "2026-10-21",
+  },
+  {
+    id: "risk-06",
+    title: "Mesh sidecar memory overhead on legacy nodes",
+    level: "Medium",
+    projectId: "prj-mesh",
+    ownerId: "eng-001",
+    openedAt: "2026-10-05",
+  },
+  {
+    id: "risk-07",
+    title: "Single reviewer for checkout payment changes",
+    level: "Low",
+    projectId: "prj-checkout-redesign",
+    ownerId: "eng-025",
+    openedAt: "2026-10-22",
+  },
+]

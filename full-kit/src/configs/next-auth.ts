@@ -116,7 +116,7 @@ export const authOptions: NextAuthOptions = {
         session.user.name = token.name
         session.user.avatar = token.avatar
         session.user.email = token.email
-        token.status = token.status
+        session.user.status = token.status
       }
 
       return session

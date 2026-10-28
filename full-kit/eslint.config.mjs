@@ -35,6 +35,23 @@ const eslintConfig = [
       ],
     },
   },
+  {
+    // Seed data is reachable only through the async, role-guarded service layer.
+    ignores: ["src/services/**", "src/data/**"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["@/data/engineering", "@/data/engineering/*"],
+              message: "Use src/services instead of importing seed data.",
+            },
+          ],
+        },
+      ],
+    },
+  },
 ]
 
 export default eslintConfig
